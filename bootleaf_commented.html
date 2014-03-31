@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <title>ieldran</title>
+
+        <!-- Core CSS -->
+        <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+        <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link href="assets/typeahead.js/typeahead.js-bootstrap.css" rel="stylesheet" type="text/css"> <!--https://github.com/jharding/typeahead.js-bootstrap.css-->
+        <link href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css" rel="stylesheet" type="text/css">
+        <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+        
+         <!-- Personalized font, can add through Google APIs -->
+        <link href='http://fonts.googleapis.com/css?family=Fenix|Meddon' rel='stylesheet' type='text/css'>
+
+        <!-- Custom styles for this template -->
+        <style>
+            html, body, #sidebar, #container {
+                height: 100%;
+                margin: 0px;
+            }
+            body {
+                padding-top: 50px;
+                font-family: 'Fenix', serif;
+               
+            } 
+            .panel-primary {
+				border-color: black;
+				
+			}
+            .panel-primary .panel-heading {
+            	background-color: green;
+				border-color: green;
+        	
+        
+            }
+            label {
+                font-weight: normal;
+            }
+            #map {
+                height: 100%;
+                margin: 0px;
+                -webkit-box-shadow: 0 -1px 10px rgba(0,0,0,0.5);
+                -moz-box-shadow: 0 -1px 10px rgba(0,0,0,0.5);
+                box-shadow: 0 -1px 10px rgba(0,0,0,0.5);
+            }
+            #loading {
+                position: absolute;
+                width: 220px;
+                height: 19px;
+                top: 50%;
+                left: 50%;
+                margin: -10px 0 0 -110px;
+                z-index: 20001;
+            }
+            #searchbox {
+                -webkit-border-top-left-radius: 4px;
+                -webkit-border-bottom-left-radius: 4px;
+                -moz-border-top-left-radius: 4px;
+                -moz-border-bottom-left-radius: 4px;
+                border-top-left-radius: 4px;
+                border-bottom-left-radius: 4px;
+            }
+            .table {
+                margin-bottom: 0px;
+     
+            }
+            .navbar .navbar-brand {
+                font-weight: bold;
+                font-size: 22px;
+                color: white;
+                white-space: nowrap;
+                font-family: 'Meddon', cursive;
+                
+            }
+            .navbar-default {
+				background-color: #f8f8f8;
+            }
+            .navbar-collapse.in {
+                overflow-y: hidden;
+            }
+            .tt-dropdown-menu {
+                overflow: auto;
+                
+            }
+            .tt-hint, .tt-query {
+                display: block;
+                width: 100%;
+                height: 34px;
+                padding: 6px 12px;
+                font-size: 14px;
+                border-radius: 4px;
+            }
+            .typeahead-header {
+                margin: 0 5px 5px 5px;
+                padding: 3px 0;
+                border-bottom: 2px solid #333;
+            }
+            .tt-suggestion + .tt-suggestion {
+                border-top: 1px solid #ccc;
+            }
+            .search-container {
+                width: 250px;
+            }
+            .leaflet-popup-content {
+                margin-top: 5px;
+                margin-bottom: 5px;
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+            .leaflet-popup-content-wrapper {
+                border-radius: 5px;
+            }
+            .panel-heading a:hover {
+                text-decoration: none;
+            }
+            @media (max-width: 992px) {
+                .navbar .navbar-brand {
+                    font-size: 18px;
+                    float: left;
+                    
+                }
+                .search-container {
+                    width: 150px;
+                }
+            }
+            @media (max-width: 767px){
+                .search-container {
+                    width: 100%;
+                }
+                .url-break {
+                    word-break: break-all;
+                    word-break: break-word;
+                    -webkit-hyphens: auto;
+                    hyphens: auto;
+                }
+            }
+            /* Print Handling */
+            @media print {
+                .navbar, .toggle, #sidebar {
+                    display: none !important;
+                }
+            }
+        </style>
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.6.2/html5shiv.js"></script>
+            <script src="//cdnjs.cloudflare.com/ajax/libs/respond.js/1.2.0/respond.js"></script>
+        <![endif]-->
+    </head>
+
+    <body>
+        <div class="navbar navbar-default navbar-fixed-top">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle btn" data-toggle="collapse" data-target=".navbar-collapse" style="height: 34px; padding: 5px 10px; margin-right: 10px;"><i class="fa fa-ellipsis-v" style="color: green"></i></button>
+                <button id="toggle" type="button" class="navbar-toggle btn" style="height: 34px; padding: 5px 10px; margin-right: 10px;"><i id="toggleIcon" class="fa fa-check-square-o" style="color: green"></i></button>
+<!-- Header title -->
+                <a class="navbar-brand" style="color: green" href="#"><i>ieldran</i></a>
+            </div>
+            <div class="navbar-collapse collapse" id="navbar-collapse">
+                <form class="navbar-form navbar-right">
+                    <div class="input-group search-container">
+                        <input id="searchbox" type="text" class="form-control" placeholder="Search">
+                        <span class="input-group-addon"><i class="fa fa-search"></i></span>
+                    </div>
+                </form>
+<!-- Navigation bar -->
+                <ul class="nav navbar-nav">
+                    <li><a href="#" data-toggle="collapse" data-target=".navbar-collapse.in" onclick="$('#aboutModal').modal('show'); return false;"><i class="fa fa-question-circle" style="color: green"></i>&nbsp;&nbsp;About</a></li>
+                    <li class="dropdown">
+                        <a id="toolsDrop" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-globe" style="color: green"></i>&nbsp;&nbsp;Tools <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" data-toggle="collapse" data-target=".navbar-collapse.in" onclick="map.fitBounds(boroughs.getBounds()); return false;"><i class="fa fa-arrows-alt"></i>&nbsp;&nbsp;Zoom To Full Extent</a></li>
+                            <li><a href="#" data-toggle="collapse" data-target=".navbar-collapse.in" onclick="$('#legendModal').modal('show'); return false;"><i class="fa fa-picture-o"></i>&nbsp;&nbsp;Show Legend</a></li>
+                            </ul>
+                    </li>
+                    <!-- <li class="dropdown">
+                        <a id="downloadDrop" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-cloud-download" style="color: green"></i>&nbsp;&nbsp;Download <b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><a href="data/ieldran.geojson" target="_blank" data-toggle="collapse" data-target=".navbar-collapse.in"><i class="fa fa-download"></i>&nbsp;&nbsp;Cemeteries</a></li>
+                                //
+                            </ul>
+                    </li> -->
+        			<li><a href="http://dev2.matrix.msu.edu/~kathryn.meyers/EAS/bootleaf-master/resources.html"><i class="fa fa-file" style="color: green"></i>&nbsp;&nbsp;Resources</a></li>
+                </ul>
+            </div><!--/.navbar-collapse -->
+        </div>
+
+ <!-- Sidebar -->
+        <div class="row" id="container">
+            <div class="col-sm-3 col-lg-3" id="sidebar" style="padding: 10px; overflow: auto;">
+                <ul class="nav nav-tabs" id="myTab">
+ <!-- Sidebar navigation -->                	
+                	<li class ="active" style="color: green"><a href="#test" data-toggle="tab" style="color: black"><i class="fa fa-spinner"></i>&nbsp;Welcome</a></li>
+                	
+                    <li><a href="#layers" data-toggle="tab" style="color: black"><i class="fa fa-check-square-o"></i>&nbsp;Layers</a></li>
+                    
+                    
+                </ul>
+
+                <div class="tab-content" style="padding-top: 10px;">  
+                    <div class="tab-pane active" id="test">
+                    	
+                    
+                        <div class="panel-group">
+   <!-- First Tab -->                      
+                        <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion_" href="#overlay-test" style="color: green">
+                                        Welcome to the <i>ieldran</i> database
+                                    </a>
+                                </div>
+                                <div id="overlay-test" class="panel-collapse collapse in">
+                                    <div class="panel-body" style="padding: 0px 15px;">
+                
+                                      
+                                            <label>
+                                                The Early Anglo-Saxon Mapping Project provides locations, summaries, and information about citation and collections for numerous cemeteries from this period.  The primary feature is a map that shows locations of cemeteries in England dating from the mid-4th to late 7th century CE. Each site can be clicked on to reveal more information about the cemetery, the burials, associated artifacts, references for books and journal articles written about the cemetery, and where the original excavation materials, human remains, and artifacts are kept.
+                                            </label>
+                   
+                                  
+                                    </div>
+                                </div>
+                            </div>
+ <!-- Second heading -->                        
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <label>
+                                    	<a style="color: green">Adding information </a>
+                                    </label>
+                                </div>
+                                <div id="basemap-layers" class="panel-collapse collapse in">
+                                    <div class="panel-body" style="padding: 0px 15px;">
+                                            <label>
+                                                This is a community sourced project. In the near future, you will be able to submit your data to the project, whether it consist of a cemetery we missed, corrections about current data, or additional citations.
+                                            </label>                                 
+                                    </div>
+                                </div>
+                            </div>
+   <!-- Third heading -->                          
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <label>
+                                    	<a style="color: green">License and Attribution </a>
+                                    </label>
+                                </div>
+                                <div id="basemap-layers" class="panel-collapse collapse in">
+                                    <div class="panel-body" style="padding: 0px 15px;">
+                                            <label>
+                                            	<span xmlns:dct="http://purl.org/dc/terms/" property="dct:title"><i>ieldran</i></span> by <a xmlns:cc="http://creativecommons.org/ns#" href="http://ieldran.matrix.msu.edu" property="cc:attributionName" rel="cc:attributionURL" style="color: green">Katy Meyers and Matt Austin</a> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" style="color: green">Creative Commons Attribution-ShareAlike 4.0 International License</a>.<br />
+                                            	<p>Attribution: Meyers and Austin 2014. <i>ieldran</i>: The Early Anglo-Saxon Mapping Project. <i>Electronic Document</i><a href "http://ieldran.matrix.msu.edu" style="color: green"> http://ieldran.matrix.msu.edu</a></p>
+                                                <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />
+                                            </label>                                 
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                    
+  <!-- Second tab -->                   
+                    <div class="tab-pane" id="layers">
+                    	
+                    
+                        <div class="panel-group">
+                        
+                        <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion_" href="#overlay-layers" style="color: green">
+                                        Navigating the <i>ieldran</i> database
+                                    </a>
+                                </div>
+                                <div id="overlay-layers" class="panel-collapse collapse in">
+                                    <div class="panel-body" style="padding: 0px 15px;">
+                
+                                      
+                                            <label>
+                                                This tab will help you dynamically navigate the cemeteries!
+                                            </label>
+                   
+                                  
+                                    </div>
+                                </div>
+                            </div>
+                        
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion_" href="#overlay-layers" style="color: green">
+                                        Overlay Layers
+                                    </a>
+                                </div>
+                                <div id="overlay-layers" class="panel-collapse collapse in">
+                                    <div class="panel-body" style="padding: 0px 15px;">
+                
+                                        <div class="text">
+                                            <label>
+                                                <input type="checkbox" name="overlayLayers" id="cemeteries" z-index="3" checked>
+                                                Mixed Cemeteries   &nbsp;<img src="img/pingreen.png" width="20" height="28">
+                                            </label>
+                   
+                                        </div>
+                                         <div class="text">
+                                            <label>
+                                                <input type="checkbox" name="overlayLayers" id="cremation" z-index="3" checked>
+                                                Cremation Cemeteries   &nbsp;<img src="img/pinblue.png" width="20" height="28">
+                                            </label>
+                   
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion_" href="#basemap-layers" style="color: green">
+                                        Basemaps
+                                    </a>
+                                </div>
+                                <div id="basemap-layers" class="panel-collapse collapse in">
+                                    <div class="panel-body" style="padding: 0px 15px;">
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio" name="basemapLayers" id="mapquestOSM" checked>
+                                                Streets
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio" name="basemapLayers" id="mapquestOAM">
+                                                Imagery
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio" name="basemapLayers" id="mapquestHYB">
+                                                Hybrid
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                   
+                </div>
+            </div>
+            <div class="col-sm-9 col-lg-9" id="map">
+                <div id="loading" style="display: block;">
+                    <div class="loading-indicator">
+                        <div class="progress progress-striped active">
+                            <div class="progress-bar progress-bar-info" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+ <!-- Navigation modal -->
+        <div class="modal fade" id="aboutModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Welcome to <i>ieldran</i>!</h4>
+                    </div>
+
+                    <div class="modal-body">
+                         <ul id="aboutTabs" class="nav nav-tabs">
+                            <li class="active" style="color: black"><a href="#about" data-toggle="tab" style="color: grey"><i class="fa fa-question-circle" style="color: green"></i>&nbsp;About the project</a></li>
+                            <!-- <li><a href="#contact" data-toggle="tab" style="color: grey"><i class="fa fa-envelope" style="color: green"></i>&nbsp;Contribute</a></li>-->
+                            <li><a href="#disclaimer" data-toggle="tab" style="color: grey"><i class="fa fa-wrench" style="color: green"></i>&nbsp;Framework</a></li>
+                            <li class="dropdown" style="color: black">
+                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" style="color: grey"><i class="fa fa-globe" style="color: green"></i>&nbsp;Metadata <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                   
+                                    <li><a href="#cemeteries-tab" data-toggle="tab" >Cemeteries</a></li>
+                                   
+                                </ul>
+                            </li>
+                        </ul>
+                        <div id="aboutTabsContent" class="tab-content" style="padding-top: 10px;">
+                            <div class="tab-pane fade active in" id="about">
+                                <p>The Early Anglo-Saxon Mapping Project is a Cultural Heritage Informatics Initiative Project</p>
+                                <div class="panel panel-primary">
+                                    <div class="panel-heading">
+                                        Attribution
+                                    </div>
+                                    <ul class="list-group">
+                                        <li class="list-group-item">Map and framework created by <a href="http://bonesdontlie.wordpress.com" style="color: green">Katy Meyers</a>, Department of Anthropology, Michigan State University</li>
+                                        <li class="list-group-item">Data provided by <a href="http://darkageology.wordpress.com/" style="color: green">Matthew Austin</a>, Department of Archaeology, University of Reading</li>
+                                        <li class="list-group-item">Support and sponsorship by <a href="http://www2.matrix.msu.edu/" style="color: green">Matrix: Center for Digital Humanities and Social Science</a></li>
+                                        <li class="list-group-item">Thank you to .... </li>
+                                        
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="disclaimer">
+                                <p>This site is built from a <a href="https://github.com/bmcbride/bootleaf" style="color: green">Bootleaf</a> framework created by Bryan McBride, a simple template for building web mapping applications with <a href="http://getbootstrap.com/" style="color: green">Bootstrap 3</a> and <a href="http://leafletjs.com/" target="_blank" style="color: green">Leaflet</a>
+                                </p>
+                                <div class="panel panel-primary">
+                                    <div class="panel-heading">
+                                        Features
+                                    </div>
+                                    <ul class="list-group">
+                                        <li class="list-group-item">Fullscreen mobile-friendly map template with responsive navbar, sidebar, and modal placeholders</li>
+                                        <li class="list-group-item">jQuery loading of external GeoJSON files</li>
+                                        <li class="list-group-item">Elegant client-side multi-layer feature search with autocomplete using <a href="http://twitter.github.io/typeahead.js/" target="_blank" style="color: green">typeahead.js</a></li>
+                                        <li class="list-group-item">Map Markers complements of <a href="http://medialoot.com/item/free-vector-map-location-pins/" style="color: green">MediaLoot</a>.</li>
+                                        <li class="list-group-item">Custom Location Based URLs complements of <a href="https://github.com/mlevans/leaflet-hash" style="color: green">Leaflet Hash</a> by Michael Evans.</li>
+                                    </ul>
+                                </div>
+                                
+                            </div>
+                            <div class="tab-pane fade" id="contact">
+                                <form id="contact-form" method=”POST” action=”contact-form-submission.php”>
+                                    <fieldset>
+                                        <div class="form-group">
+                                            <label for="name">Name:</label>
+                                            <input type="text" class="form-control" id="name">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="email">Email:</label>
+                                            <input type="text" class="form-control" id="email">
+                                        </div>
+                   						 <div class="form-group">
+                                            <label for="cemname">Cemetery Name:</label>
+                                            <input type="text" class="form-control" id="cemname">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="location">Cemetery Location:</label>
+                                            <input type="text" class="form-control" id="location">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="other">Other Information:</label>
+                                            <textarea class="form-control" rows="5" id="other"></textarea>
+                                        </div>
+            
+                                        <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal">Submit</button>
+                                    </fieldset>
+                                </form>
+                            </div>
+                         
+                           
+                            <div class="tab-pane fade" id="cemeteries-tab">
+                                <p>Cemetery data courtesy of <a href="https://data.cityofnewyork.us/Recreation/Theaters/kdu2-865w" target="_blank">NYC Department of Information & Telecommunications (DoITT)</a></p>
+                            </div>
+                        
+                        </div>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div class="modal fade" id="legendModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Map Legend</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                        <img src="img/pingreen.png" width="24" height="28"> Mixed Cemeteries</p>
+                        <p>
+                        <img src="img/pinblue.png" width="24" height="28"> Cremation Cemeteries</p>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div class="modal fade" id="loginModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Login</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form id="contact-form">
+                            <fieldset>
+                                <div class="form-group">
+                                    <label for="name">Username:</label>
+                                    <input type="text" class="form-control" id="username">
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Password:</label>
+                                    <input type="password" class="form-control" id="password">
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal">Login</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div class="modal fade" id="featureModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title text-primary" id="feature-title"></h4>
+                    </div>
+                    <div class="modal-body" id="feature-info">
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+ <!-- This is where leaflet map begins -->
+
+        <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+        <script type="text/javascript" src="http://netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="assets/typeahead.js/typeahead.min.js"></script> <!--https://github.com/twitter/typeahead.js/-->
+        <script type="text/javascript" src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+        <script type="text/javascript" src="assets/leaflet-hash.js"></script>
+        <script type="text/javascript">
+        
+        	
+        	
+            var map, cemeteriesSearch = [], cremationSearch = [];
+            
+
+            $(document).ready(function() {
+                $("[rel=tooltip]").tooltip();
+                if (document.body.clientWidth <= 767) {
+                    $("#map").css("class", "col-sm-12 col-lg-12");
+                    $("#sidebar").css("display", "none");
+                };
+            });
+            $(window).resize(function() {
+                $(".tt-dropdown-menu").css("max-height", $("#container").height()-$(".navbar").height()-20);
+                if (document.body.clientWidth <= 767) {
+                    $("#map").css("class", "col-sm-12 col-lg-12");
+                    $("#sidebar").css("display", "none");
+                } else {
+                    $("#map").css("class", "col-sm-9 col-lg-9");
+                    $("#sidebar").css("display", "block");
+                };
+            });
+
+            $("#toggle").click(function() {
+                $("#toggle i").toggleClass("fa fa-check-square-o fa fa-map-marker");
+                $("#map").toggleClass("col-sm-9 col-lg-9 col-sm-12 col-lg-12");
+                $("#sidebar").toggle();
+                if (document.body.clientWidth <= 767) {
+                    $("#map").toggle();
+                };
+                map.invalidateSize();
+                return false;
+            });
+
+            $("input[name='basemapLayers']").change(function () {
+                // Remove unchecked layers
+                $("input:radio[name='basemapLayers']:not(:checked)").each(function () {
+                    map.removeLayer(window[$(this).attr("id")]);
+                });
+                // Add checked layer
+                $("input:radio[name='basemapLayers']:checked").each(function () {
+                    map.addLayer(window[$(this).attr("id")]);
+                });
+            });
+
+            $("input:checkbox[name='overlayLayers']").change(function () {
+                var layers = [];
+                function sortByKey(array, key) {
+                    return array.sort(function (a, b) {
+                        var x = a[key];
+                        var y = b[key];
+                        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+                    });
+                }
+                if ($("#" + $(this).attr("id")).is(":checked")) {
+                    $("input:checkbox[name='overlayLayers']").each(function () {
+                        // Remove all overlay layers
+                        map.removeLayer(window[$(this).attr("id")]);
+                        if ($("#" + $(this).attr("id")).is(":checked")) {
+                            // Add checked layers to array for sorting
+                            layers.push({
+                                "z-index": $(this).attr("z-index"),
+                                "layer": $(this)
+                            });
+                        }
+                    });
+                    // Sort layers array by z-index
+                    var orderedLayers = sortByKey(layers, "z-index");
+                    // Loop through ordered layers array and add to map in correct order
+                    $.each(orderedLayers, function () {
+                        map.addLayer(window[$(this)[0].layer[0].id]);
+                    });
+                } else {
+                    // Simply remove unchecked layers
+                    map.removeLayer(window[$(this).attr("id")]);
+                }
+            });
+
+ // Add Basemaps 
+ 
+            // Basemap Layers
+            var mapquestOSM = L.tileLayer("http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png", {
+                maxZoom: 19,
+                subdomains: ["otile1", "otile2", "otile3", "otile4"],
+                attribution: 'Tiles courtesy of <a href="http://www.mapquest.com/" target="_blank">MapQuest</a> <img src="http://developer.mapquest.com/content/osm/mq_logo.png">. Map data (c) <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA.'
+            });
+            var mapquestOAM = L.tileLayer("http://{s}.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.jpg", {
+                maxZoom: 18,
+                subdomains: ["oatile1", "oatile2", "oatile3", "oatile4"],
+                attribution: 'Tiles courtesy of <a href="http://www.mapquest.com/" target="_blank">MapQuest</a>. Portions Courtesy NASA/JPL-Caltech and U.S. Depart. of Agriculture, Farm Service Agency'
+            });
+            var mapquestHYB = L.layerGroup([L.tileLayer("http://{s}.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.jpg", {
+                maxZoom: 18,
+                subdomains: ["oatile1", "oatile2", "oatile3", "oatile4"]
+            }), L.tileLayer("http://{s}.mqcdn.com/tiles/1.0.0/hyb/{z}/{x}/{y}.png", {
+                maxZoom: 19,
+                subdomains: ["oatile1", "oatile2", "oatile3", "oatile4"],
+                attribution: 'Labels courtesy of <a href="http://www.mapquest.com/" target="_blank">MapQuest</a> <img src="http://developer.mapquest.com/content/osm/mq_logo.png">. Map data (c) <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors, CC-BY-SA. Portions Courtesy NASA/JPL-Caltech and U.S. Depart. of Agriculture, Farm Service Agency'
+            })]);
+
+            // Overlay Layers
+    		
+    		
+            var cremation = L.geoJson(null, {
+                pointToLayer: function (feature, latlng) {
+                    return L.marker(latlng, {
+                        icon: L.icon({
+                            iconUrl: "img/pinblue.png",
+                            iconSize: [10, 12],
+                            iconAnchor: [12, 28],
+                            popupAnchor: [0, -25]
+                        }),
+                        title: feature.properties.cemetery,
+                        riseOnHover: true
+                    });
+                },
+                onEachFeature: function (feature, layer) {
+                    if (feature.properties) {
+                         var content =    "<table class='table-striped table-bordered table-condensed' style='width: 300px'> "+
+                                            "<tr><th>Cemetery</th><td>" + feature.properties.cemetery + "</td></tr>"+
+                                            "<tr><th>Historic County/th><td>" + feature.properties.historic_county + "</td></tr>"+
+                                            "<tr><th>Type</th><td>" + feature.properties.type + "</td></tr>"+
+                                            "<tr><th>Cremation Burials</th><td>" + feature.properties.cremation_burials + "</td></tr>"+
+                                            "<tr><th>Inhumation Burials</th><td>" + feature.properties.inhumation_burials + "</td></tr>"+
+                                            "<tr><th>Date Range</th><td>" + feature.properties.date_range + "</td></tr>"+
+                                            "<tr><th>Citation</th><td>" + feature.properties.citation + "</td></tr>"+
+                                            "<tr><th>Museum</th><td>" + feature.properties.museum + "</td></tr>"+
+                                            "<tr><th>Website</th><td><a class='url-break' href='" + feature.properties.URL + "' target='_blank'>" + feature.properties.URL + "</a></td></tr>"+
+                                        "<table>";
+
+                        if (document.body.clientWidth <= 767) {
+                            layer.on({
+                                click: function(e) {
+                                    $("#feature-title").html(feature.properties.cemetery);
+                                    $("#feature-info").html(content);
+                                    $("#featureModal").modal("show");
+                                }
+                            });
+
+                        } else {
+                            layer.bindPopup(content, {
+                                maxWidth: "auto",
+                                closeButton: false
+                            });
+                        };
+                        cremationSearch.push({
+                            value: layer.feature.properties.cemetery,
+                            tokens: [layer.feature.properties.cemetery],
+                            layer: "Cremation Cemeteries",
+                            id: L.stamp(layer),
+                            lat: layer.feature.geometry.coordinates[1],
+                            lng: layer.feature.geometry.coordinates[0]
+                        });
+                    }
+                }
+            });
+            $.getJSON("data/ieldran_cremation.geojson", function (data) {
+                cremation.addData(data);
+            });
+            
+            var cemeteries = L.geoJson(null, {
+                pointToLayer: function (feature, latlng) {
+                    return L.marker(latlng, {
+                        icon: L.icon({
+                            iconUrl: "img/pingreen.png",
+                            iconSize: [10, 12],
+                            iconAnchor: [12, 28],
+                            popupAnchor: [0, -25]
+                        }),
+                        title: feature.properties.NAME,
+                        riseOnHover: true
+                    });
+                },
+                onEachFeature: function (feature, layer) {
+                    if (feature.properties) {
+                        var content =   "<table class='table-striped table-bordered table-condensed' style='width: 300px'> "+
+                                            "<tr><th>Cemetery</th><td>" + feature.properties.cemetery + "</td></tr>"+
+                                            "<tr><th>Historic County</th><td>" + feature.properties.historic_county + "</td></tr>"+
+                                            "<tr><th>Type</th><td>" + feature.properties.type + "</td></tr>"+
+                                            "<tr><th>Cremation Burials</th><td>" + feature.properties.cremation_burials + "</td></tr>"+
+                                            "<tr><th>Inhumation Burials</th><td>" + feature.properties.inhumation_burials + "</td></tr>"+
+                                            "<tr><th>Date Range</th><td>" + feature.properties.date_range + "</td></tr>"+
+                                            "<tr><th>Citation</th><td>" + feature.properties.citation + "</td></tr>"+
+                                            "<tr><th>Museum</th><td>" + feature.properties.museum + "</td></tr>"+
+                                            "<tr><th>Website</th><td><a class='url-break' href='" + feature.properties.URL + "' target='_blank'>" + feature.properties.URL + "</a></td></tr>"+
+                                        "<table>";
+                                        
+
+                        if (document.body.clientWidth <= 767) {
+                            layer.on({
+                                click: function(e) {
+                                    $("#feature-title").html(feature.properties.cemetery);
+                                    $("#feature-info").html(content);
+                                    $("#featureModal").modal("show");
+                                }
+                            });
+
+                        } else {
+                            layer.bindPopup(content, {
+                                maxWidth: "auto",
+                                closeButton: false
+                            });
+                        };
+                        cemeteriesSearch.push({
+                            value: layer.feature.properties.cemetery,
+                            tokens: [layer.feature.properties.cemetery],
+                            layer: "Cemeteries",
+                            id: L.stamp(layer),
+                            lat: layer.feature.geometry.coordinates[1],
+                            lng: layer.feature.geometry.coordinates[0]
+                        });
+                    }
+                }
+            });
+            $.getJSON("data/ieldran_mixed.geojson", function (data) {
+                cemeteries.addData(data);
+            });
+
+            map = L.map("map", {
+                zoom: 6,
+                center: [52.95042, -1.142578], 
+                layers: [mapquestOSM, cemeteries, cremation]
+            });
+			
+			var hash = new L.Hash(map);
+			
+            // Larger screens get expanded layer control
+            if (document.body.clientWidth <= 767) {
+                var isCollapsed = true;
+            } else {
+                var isCollapsed = false;
+            };
+
+            // Highlight search box text on click
+            $("#searchbox").click(function () {
+                $(this).select();
+            });
+
+            // Typeahead search functionality
+            $(document).one("ajaxStop", function() {
+                $("#loading").hide();
+                $("#searchbox").typeahead([{
+                    
+                    name: "Mixed Cemeteries",
+                    local: cemeteriesSearch,
+                    minLength: 2,
+                    limit: 10,
+                    header: "<h4 class='typeahead-header'><img src='img/pingreen.png' width='20' height='28'>&nbsp;Mixed Cemeteries</h4>"
+               
+                },{
+                
+                name: "Cremation Cemeteries",
+                    local: cremationSearch,
+                    minLength: 2,
+                    limit: 10,
+                    header: "<h4 class='typeahead-header'><img src='img/pinblue.png' width='20' height='28'>&nbsp;Cremation Cemeteries</h4>"
+                },{
+                    name: "GeoNames",
+                    remote: {
+                        url: "http://api.geonames.org/searchJSON?username=bootleaf&featureClass=P&maxRows=5&countryCode=US&name_startsWith=%QUERY",
+                        beforeSend: function(jqXhr, settings) {
+                            settings.url += "&east="+map.getBounds().getEast()+"&west="+map.getBounds().getWest()+"&north="+map.getBounds().getNorth()+"&south="+map.getBounds().getSouth();
+                        },
+                        filter: function(parsedResponse) {
+                            var dataset = [];
+                            for(i = 0; i < parsedResponse.geonames.length; i++) {
+                                dataset.push({
+                                    value: parsedResponse.geonames[i].name,
+                                    tokens: [parsedResponse.geonames[i].name],
+                                    layer: "GeoNames",
+                                    lat: parsedResponse.geonames[i].lat,
+                                    lng: parsedResponse.geonames[i].lng
+                                });
+                            }
+                            return dataset;
+                        }
+                    },
+                    minLength: 2,
+                    limit: 5,
+                    header: "<h4 class='typeahead-header'><img src='img/globe.png' width='25' height='25'>&nbsp;GeoNames Places</h4>"
+                  }]).on("typeahead:selected", function (obj, datum) {
+                    if (datum.layer === "Boroughs") {
+                        map.fitBounds(datum.bounds);
+                    };
+                    if (datum.layer === "Cemeteries") {
+                        if (!map.hasLayer(cemeteries)) {
+                            map.addLayer(cemeteries);
+                            $("#cemeteries").prop("checked", true);
+                        };
+                        map.setView([datum.lat, datum.lng], 17);
+                        if (map._layers[datum.id]) {
+                            map._layers[datum.id].openPopup();
+                        };
+                    };
+                    if (datum.layer === "GeoNames") {
+                        map.setView([datum.lat, datum.lng], 14);
+                    };
+                    if ($("#navbar-collapse").height() > 50) {
+                        $("#navbar-collapse").collapse("hide");
+                    };
+                }).on("typeahead:initialized ", function () {
+                    $(".tt-dropdown-menu").css("max-height", 300);
+                }).on("typeahead:opened", function () {
+                    $(".navbar-collapse.in").css("max-height", $(document).height()-$(".navbar-header").height());
+                    $(".navbar-collapse.in").css("height", $(document).height()-$(".navbar-header").height());
+                }).on("typeahead:closed", function () {
+                    $(".navbar-collapse.in").css("max-height", "");
+                    $(".navbar-collapse.in").css("height", "");
+                });
+            });
+
+            // Placeholder hack for IE
+            if (navigator.appName == "Microsoft Internet Explorer") {
+                $("input").each( function () {
+                    if ($(this).val() == "" && $(this).attr("placeholder") != "") {
+                        $(this).val($(this).attr("placeholder"));
+                        $(this).focus(function () {
+                            if ($(this).val() == $(this).attr("placeholder")) $(this).val("");
+                        });
+                        $(this).blur(function () {
+                            if ($(this).val() == "") $(this).val($(this).attr("placeholder"));
+                        });
+                    }
+                });
+            }
+        </script>
+    </body>
+</html>
