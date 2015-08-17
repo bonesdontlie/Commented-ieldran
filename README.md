@@ -3,9 +3,9 @@ Commented ieldran
 
 Commented version of Bootleaf for CHI fellows
 
-This was adapted from Bryan McBride's Bootleaf: https://github.com/bmcbride/bootleaf
+This was forked and adapted from Bryan McBride's Bootleaf: https://github.com/bmcbride/bootleaf
 
-Also used Leaflet Hash by Michael Evans for unique URLs: https://github.com/mlevans/leaflet-hash
+Also forked and used Leaflet Hash by Michael Evans for unique URLs: https://github.com/mlevans/leaflet-hash
 
 Version is for ieldran: Early Anglo-Saxon Mapping Project: http://ieldran.matrix.msu.edu
 
